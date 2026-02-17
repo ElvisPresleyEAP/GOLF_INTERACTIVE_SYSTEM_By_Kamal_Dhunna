@@ -1967,22 +1967,44 @@
             </div>
             
             <div class="howto-section">
-                <h4>🔄 LIVE SYNC (Multiplayer)</h4>
-                <p>Share live leaderboard updates with your golf group!</p>
+                <h4>🔄 LIVE SYNC (Multiplayer Leaderboard)</h4>
+                <p>Let everyone in your golf group see live score updates on their own device!</p>
+                
+                <p style="margin-top:10px"><strong>🎯 How It Works:</strong></p>
                 <ul>
-                    <li><strong>How it works:</strong> Admin uploads scores to cloud, others refresh to see updates</li>
-                    <li><strong>One-time setup (Admin only):</strong></li>
-                    <li style="margin-left:15px">1. Get a free GitHub token (link in app)</li>
-                    <li style="margin-left:15px">2. Paste token in the "GitHub Token" field</li>
-                    <li style="margin-left:15px">3. Click "Upload Current Scores to Cloud"</li>
-                    <li style="margin-left:15px">4. Share the generated URL with your group</li>
-                    <li><strong>For all players:</strong></li>
-                    <li style="margin-left:15px">1. Paste the shared URL in "Sync URL" field</li>
-                    <li style="margin-left:15px">2. Click "🔄 Refresh Leaderboard" to get latest scores</li>
-                    <li><strong>Admin updates:</strong> Click "Upload" after entering new scores</li>
-                    <li><strong>Players refresh:</strong> Click "Refresh" to see latest updates</li>
+                    <li>One person (the "Admin") enters all scores and uploads to cloud</li>
+                    <li>Everyone else gets a link to view the live leaderboard</li>
+                    <li>Players tap "Refresh" anytime to see the latest scores</li>
+                    <li>No accounts needed - just a free GitHub token for the Admin</li>
                 </ul>
-                <div class="howto-tip">💡 Not real-time automatic - players tap Refresh to get updates. Zero maintenance, free forever!</div>
+                
+                <p style="margin-top:10px"><strong>👑 ADMIN SETUP (One-Time):</strong></p>
+                <ul>
+                    <li>1. Go to Info tab → Live Sync section</li>
+                    <li>2. Click "Get GitHub Token" link → Create free token with "gist" permission</li>
+                    <li>3. Copy token → Paste in "GitHub Token" field → Click "Save Token"</li>
+                    <li>4. Click "☁️ Upload Current Scores to Cloud"</li>
+                    <li>5. A Sync URL appears - share this link with your group!</li>
+                </ul>
+                
+                <p style="margin-top:10px"><strong>📱 FOR OTHER PLAYERS:</strong></p>
+                <ul>
+                    <li>1. Open the app on your phone/device</li>
+                    <li>2. Go to Info tab → Live Sync section</li>
+                    <li>3. Paste the URL the Admin shared into "Sync URL" field</li>
+                    <li>4. Click "💾 Save URL"</li>
+                    <li>5. Click "🔄 Refresh Leaderboard from Cloud" to see scores</li>
+                </ul>
+                
+                <p style="margin-top:10px"><strong>🔁 DURING THE ROUND:</strong></p>
+                <ul>
+                    <li><strong>Admin:</strong> Enter scores normally → Click "Upload" to push updates</li>
+                    <li><strong>Players:</strong> Tap "Refresh" anytime to pull latest scores</li>
+                    <li>Upload after each hole or batch of updates - your choice!</li>
+                </ul>
+                
+                <div class="howto-tip">💡 This is NOT auto-sync - players must tap Refresh to see updates. That's what makes it free & simple with zero maintenance!</div>
+                <div class="howto-tip">⚠️ Only the Admin needs a GitHub token. Other players just need the shared URL!</div>
             </div>
             
             <div class="howto-section">
@@ -5606,12 +5628,12 @@
                 const newGistId = result.id;
                 localStorage.setItem('golfSyncGistId', newGistId);
                 
-                // Get raw URL
-                const rawUrl = result.files[filename].raw_url;
+                // Use stable URL format that always fetches latest (not version-specific raw_url)
+                const stableUrl = `https://gist.githubusercontent.com/${result.owner.login}/${newGistId}/raw/${filename}`;
                 
                 // Auto-fill the sync URL
-                document.getElementById('syncUrlInput').value = rawUrl;
-                localStorage.setItem('golfSyncUrl', rawUrl);
+                document.getElementById('syncUrlInput').value = stableUrl;
+                localStorage.setItem('golfSyncUrl', stableUrl);
                 
                 // Copy to clipboard
                 try {
