@@ -2003,8 +2003,18 @@
                     <li>Upload after each hole or batch of updates - your choice!</li>
                 </ul>
                 
-                <div class="howto-tip">💡 This is NOT auto-sync - players must tap Refresh to see updates. That's what makes it free & simple with zero maintenance!</div>
-                <div class="howto-tip">⚠️ Only the Admin needs a GitHub token. Other players just need the shared URL!</div>
+                <div class="howto-tip">💡 Only the Admin needs a GitHub token. Other players just need the shared URL!</div>
+                
+                <p style="margin-top:10px"><strong>⚡ SMART SYNC (Automatic Mode):</strong></p>
+                <ul>
+                    <li><strong>Default:</strong> Smart Sync is ON by default for convenience</li>
+                    <li><strong>Auto-Upload:</strong> When you change any scores, data uploads automatically</li>
+                    <li><strong>Auto-Refresh:</strong> Pulls latest data from cloud every 30 seconds</li>
+                    <li><strong>Toggle:</strong> Use the Smart Sync switch to turn ON/OFF anytime</li>
+                    <li><strong>Manual Mode:</strong> Turn Smart Sync OFF to use manual Upload/Refresh buttons</li>
+                    <li><strong>Note:</strong> Admin must enter GitHub token once for auto-upload to work</li>
+                </ul>
+                <div class="howto-tip">💡 Smart Sync = hands-free updates! Leave it ON during your round for real-time leaderboard.</div>
             </div>
             
             <div class="howto-section">
@@ -5572,11 +5582,12 @@
                 localStorage.setItem('golfSyncUrl', DEFAULT_SYNC_URL);
             }
             
-            // Restore Smart Sync state
-            const savedSmartSync = localStorage.getItem('golfSmartSync') === 'true';
+            // Restore Smart Sync state (default to ON if not set)
+            const savedSmartSync = localStorage.getItem('golfSmartSync');
+            const smartSyncOn = savedSmartSync === null ? true : savedSmartSync === 'true';
             if (document.getElementById('smartSyncToggle')) {
-                document.getElementById('smartSyncToggle').checked = savedSmartSync;
-                if (savedSmartSync) {
+                document.getElementById('smartSyncToggle').checked = smartSyncOn;
+                if (smartSyncOn) {
                     enableSmartSync();
                 }
                 updateSmartSyncUI();
