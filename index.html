@@ -2015,13 +2015,12 @@
                 <p style="margin-top:10px"><strong>⚡ SMART SYNC (Automatic Mode):</strong></p>
                 <ul>
                     <li><strong>Default:</strong> Smart Sync is ON by default for convenience</li>
-                    <li><strong>Auto-Upload:</strong> When you change any scores, data uploads automatically</li>
-                    <li><strong>Auto-Refresh:</strong> Pulls latest data from cloud every 30 seconds</li>
+                    <li><strong>ADMIN Mode:</strong> If you have a GitHub token saved, Smart Sync auto-uploads your changes (no auto-refresh, so cloud won't overwrite your work)</li>
+                    <li><strong>VIEWER Mode:</strong> If no token saved, Smart Sync auto-refreshes every 30 seconds to pull latest scores</li>
                     <li><strong>Toggle:</strong> Use the Smart Sync switch to turn ON/OFF anytime</li>
                     <li><strong>Manual Mode:</strong> Turn Smart Sync OFF to use manual Upload/Refresh buttons</li>
-                    <li><strong>Note:</strong> Admin must enter GitHub token once for auto-upload to work</li>
                 </ul>
-                <div class="howto-tip">💡 Smart Sync = hands-free updates! Leave it ON during your round for real-time leaderboard.</div>
+                <div class="howto-tip">💡 Admin = auto-upload only, Viewer = auto-refresh only. This prevents data conflicts!</div>
             </div>
             
             <div class="howto-section">
@@ -5651,26 +5650,31 @@
             smartSyncEnabled = true;
             lastDataHash = getDataHash();
             
-            // Start auto-refresh interval (every 30 seconds)
-            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-            autoRefreshInterval = setInterval(autoRefreshFromCloud, 30000);
+            const hasToken = localStorage.getItem('golfGithubToken');
             
-            // Start checking for data changes (every 5 seconds)
-            startChangeDetection();
-            
-            console.log('Smart Sync enabled');
+            if (hasToken) {
+                // ADMIN MODE: Only auto-upload changes, do NOT auto-refresh
+                // (Admin creates data, shouldn't have cloud overwrite their work)
+                startChangeDetection();
+                console.log('Smart Sync enabled (ADMIN mode - auto-upload only)');
+            } else {
+                // VIEWER MODE: Only auto-refresh from cloud, no upload
+                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                autoRefreshInterval = setInterval(autoRefreshFromCloud, 30000);
+                console.log('Smart Sync enabled (VIEWER mode - auto-refresh only)');
+            }
         }
         
         function disableSmartSync() {
             smartSyncEnabled = false;
             
-            // Stop auto-refresh
+            // Stop auto-refresh (for viewers)
             if (autoRefreshInterval) {
                 clearInterval(autoRefreshInterval);
                 autoRefreshInterval = null;
             }
             
-            // Stop change detection
+            // Stop change detection (for admins)
             stopChangeDetection();
             
             console.log('Smart Sync disabled');
@@ -5680,6 +5684,7 @@
             const toggle = document.getElementById('smartSyncToggle');
             const slider = document.getElementById('smartSyncSlider');
             const statusEl = document.getElementById('smartSyncStatus');
+            const hasToken = localStorage.getItem('golfGithubToken');
             
             if (toggle && toggle.checked) {
                 if (slider) {
@@ -5687,7 +5692,11 @@
                     slider.parentElement.previousElementSibling.nextElementSibling.style.backgroundColor = '#4caf50';
                 }
                 if (statusEl) {
-                    statusEl.innerHTML = '<span style="color:#4caf50;">⚡ Smart Sync: ON</span> - Auto-uploading changes, refreshing every 30s';
+                    if (hasToken) {
+                        statusEl.innerHTML = '<span style="color:#4caf50;">⚡ Smart Sync: ON (ADMIN)</span> - Auto-uploading your changes';
+                    } else {
+                        statusEl.innerHTML = '<span style="color:#4caf50;">⚡ Smart Sync: ON (VIEWER)</span> - Auto-refreshing every 30s';
+                    }
                 }
             } else {
                 if (slider) {
