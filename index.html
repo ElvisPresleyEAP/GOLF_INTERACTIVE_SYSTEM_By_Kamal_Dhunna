@@ -3746,12 +3746,23 @@
         function calculateStablefordPoints(gross, par, si, playingHcp) {
             if (!gross || gross === 0) return 0;
             
-            let strokesReceived = 0;
-            if (playingHcp >= si) strokesReceived = 1;
-            if (playingHcp >= si + 18) strokesReceived = 2;
-            if (playingHcp >= si + 36) strokesReceived = 3;
+            let strokeAdjustment = 0;
             
-            const adjustedPar = par + strokesReceived;
+            if (playingHcp >= 0) {
+                // Positive handicap: RECEIVE strokes on hardest holes (lowest SI)
+                if (playingHcp >= si) strokeAdjustment = 1;
+                if (playingHcp >= si + 18) strokeAdjustment = 2;
+                if (playingHcp >= si + 36) strokeAdjustment = 3;
+            } else {
+                // Negative handicap: GIVE strokes on easiest holes (highest SI)
+                // e.g., -3 gives shots on SI 18, 17, 16
+                const absHcp = Math.abs(playingHcp);
+                const givesOnSI = 19 - si; // SI 18 becomes 1, SI 17 becomes 2, etc.
+                if (absHcp >= givesOnSI) strokeAdjustment = -1;
+                if (absHcp >= givesOnSI + 18) strokeAdjustment = -2;
+            }
+            
+            const adjustedPar = par + strokeAdjustment;
             const diff = adjustedPar - gross;
             
             return Math.max(0, Math.min(5, diff + 2));
