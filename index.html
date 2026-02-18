@@ -5558,6 +5558,7 @@
         let autoRefreshInterval = null;
         let lastDataHash = '';
         let isUploading = false;
+        let lastLocalChangeTime = 0; // Track when admin last made changes
         
         // Generate hash of appData to detect changes
         function getDataHash() {
@@ -5652,15 +5653,15 @@
             
             const hasToken = localStorage.getItem('golfGithubToken');
             
+            // Start auto-refresh for everyone (every 30 seconds)
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(autoRefreshFromCloud, 30000);
+            
             if (hasToken) {
-                // ADMIN MODE: Only auto-upload changes, do NOT auto-refresh
-                // (Admin creates data, shouldn't have cloud overwrite their work)
+                // ADMIN MODE: Also auto-upload changes
                 startChangeDetection();
-                console.log('Smart Sync enabled (ADMIN mode - auto-upload only)');
+                console.log('Smart Sync enabled (ADMIN mode - auto-upload + safe auto-refresh)');
             } else {
-                // VIEWER MODE: Only auto-refresh from cloud, no upload
-                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-                autoRefreshInterval = setInterval(autoRefreshFromCloud, 30000);
                 console.log('Smart Sync enabled (VIEWER mode - auto-refresh only)');
             }
         }
@@ -5731,6 +5732,7 @@
             if (currentHash !== lastDataHash) {
                 console.log('Data changed, auto-uploading...');
                 lastDataHash = currentHash;
+                lastLocalChangeTime = Date.now(); // Mark that admin made a change
                 await silentUploadToGist();
             }
         }
@@ -5774,9 +5776,16 @@
             }
         }
         
-        // Auto-refresh from cloud (silent, for viewers)
+        // Auto-refresh from cloud (silent, for viewers and admins)
         async function autoRefreshFromCloud() {
             if (!smartSyncEnabled) return;
+            
+            // If admin made local changes in last 10 seconds, skip refresh to avoid overwriting
+            const hasToken = localStorage.getItem('golfGithubToken');
+            if (hasToken && (Date.now() - lastLocalChangeTime < 10000)) {
+                console.log('Skipping auto-refresh - recent local changes');
+                return;
+            }
             
             const syncUrl = localStorage.getItem('golfSyncUrl');
             if (!syncUrl) return;
